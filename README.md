@@ -61,8 +61,8 @@ restarts on click. Settings → Updates has "Check now" and an auto-check switch
 
 To ship an update:
 
-1. Set the updater endpoint in `src-tauri/tauri.conf.json` to this repo
-   (`https://github.com/<owner>/<repo>/releases/latest/download/latest.json`).
+1. The updater already points at this repo's releases
+   (`src-tauri/tauri.conf.json`).
 2. Add the repo secrets `TAURI_SIGNING_PRIVATE_KEY` and
    `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. The matching public key is already in
    `tauri.conf.json`. Losing the private key means existing installs can't
