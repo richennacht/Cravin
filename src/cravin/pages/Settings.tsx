@@ -7,6 +7,8 @@ import SecureInputWarning from "@/components/SecureInputWarning";
 import type { Theme } from "@/bindings";
 import { TRANSLATE_LANGS, langName } from "../lib/demo";
 import { inTauri, loadPrefs, savePrefs, type Prefs } from "../lib/runtime";
+import { updateLabel, useUpdater } from "../lib/updater";
+import { getVersion } from "@tauri-apps/api/app";
 
 const ENGINE_SECTIONS = ["general", "advanced", "history", "about"] as const;
 type EngineSection = (typeof ENGINE_SECTIONS)[number];
@@ -60,14 +62,25 @@ function Switch({
 }
 
 export default function Settings() {
-  const { settings, audioDevices, updateSetting, refreshAudioDevices } =
-    useSettings();
+  const {
+    settings,
+    audioDevices,
+    updateSetting,
+    refreshAudioDevices,
+    updateChecksLocked,
+  } = useSettings();
+  const updater = useUpdater();
+  const [version, setVersion] = useState<string>("0.1.0");
   const [prefs, setPrefs] = useState<Prefs>(loadPrefs);
   const [theme, setTheme] = useState<Theme>(getStoredTheme);
   const [engine, setEngine] = useState<EngineSection | null>(null);
 
   useEffect(() => {
-    if (inTauri) refreshAudioDevices();
+    if (!inTauri) return;
+    refreshAudioDevices();
+    getVersion()
+      .then(setVersion)
+      .catch(() => {});
   }, [refreshAudioDevices]);
 
   const setPref = <K extends keyof Prefs>(key: K, value: Prefs[K]) => {
@@ -215,6 +228,54 @@ export default function Settings() {
             on={prefs.hideFromShare}
             onChange={(v) => setPref("hideFromShare", v)}
             disabled
+          />
+        </Row>
+      </div>
+
+      <h2 className="cv-section-title">Updates</h2>
+      <div className="cv-list">
+        <Row
+          title={`Cravin ${version}`}
+          desc={
+            inTauri ? updateLabel(updater) : "Updates run in the desktop app"
+          }
+        >
+          {updater.status === "available" ? (
+            <button
+              type="button"
+              className="cv-btn cv-btn-sm cv-btn-primary"
+              onClick={updater.install}
+            >
+              Update and restart
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="cv-btn cv-btn-sm"
+              disabled={
+                !inTauri ||
+                ["checking", "downloading", "installing"].includes(
+                  updater.status,
+                )
+              }
+              onClick={updater.checkNow}
+            >
+              Check now
+            </button>
+          )}
+        </Row>
+        <Row
+          title="Check automatically"
+          desc={
+            updateChecksLocked
+              ? "Turned off by your system administrator"
+              : "On launch and every few hours"
+          }
+        >
+          <Switch
+            on={settings?.update_checks_enabled ?? true}
+            disabled={!inTauri || !!updateChecksLocked}
+            onChange={(v) => updateSetting("update_checks_enabled", v)}
           />
         </Row>
       </div>

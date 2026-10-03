@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   Boxes,
   House,
@@ -9,6 +9,8 @@ import {
 import "./cravin.css";
 import { inTauri } from "./lib/runtime";
 import { useSession } from "./lib/useSession";
+import { useUpdater } from "./lib/updater";
+import { useSettings } from "@/hooks/useSettings";
 import Home from "./pages/Home";
 import Live from "./pages/Live";
 import Translate from "./pages/Translate";
@@ -33,6 +35,24 @@ const SETUP: NavItem[] = [
 export default function CravinShell() {
   const [page, setPage] = useState<Page>("home");
   const session = useSession();
+  const updater = useUpdater();
+  const { settings, isLoading, updateChecksLocked } = useSettings();
+  const autoUpdate =
+    inTauri &&
+    !isLoading &&
+    updateChecksLocked === false &&
+    (settings?.update_checks_enabled ?? false);
+
+  // Check on launch, then every six hours while the app stays open.
+  useEffect(() => {
+    if (!autoUpdate) return;
+    useUpdater.getState().checkNow();
+    const id = window.setInterval(
+      () => useUpdater.getState().checkNow(),
+      6 * 60 * 60 * 1000,
+    );
+    return () => window.clearInterval(id);
+  }, [autoUpdate]);
 
   const navButton = (item: NavItem) => (
     <button
@@ -66,6 +86,34 @@ export default function CravinShell() {
           <div className="cv-nav-label cv-hide-narrow">Setup</div>
           {SETUP.map(navButton)}
         </nav>
+        {(updater.status === "available" ||
+          updater.status === "downloading" ||
+          updater.status === "installing") && (
+          <button
+            type="button"
+            className="cv-update cv-hide-narrow"
+            onClick={updater.install}
+            disabled={updater.status !== "available"}
+          >
+            <span className="cv-update-title">
+              {updater.status === "available"
+                ? "Update available"
+                : updater.status === "downloading"
+                  ? `Downloading ${updater.progress}%`
+                  : "Restarting"}
+            </span>
+            <span className="cv-update-sub">
+              {updater.status === "available"
+                ? `Install ${updater.version} and restart`
+                : "Hang tight"}
+            </span>
+            {updater.status === "downloading" && (
+              <span className="cv-progress" style={{ width: "100%" }}>
+                <span style={{ width: `${updater.progress}%` }} />
+              </span>
+            )}
+          </button>
+        )}
         <div className="cv-sidebar-foot cv-hide-narrow">
           <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <span className="cv-dot cv-dot-ok" /> Local only

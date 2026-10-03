@@ -53,10 +53,26 @@ bun run dev   # http://localhost:1420
 3. Rolling context file per meeting and the local/API answer router.
 4. Overlay hidden from screen capture.
 
-Update checks are off: the inherited updater points at Handy's releases.
-Turn it back on once Cravin has its own release feed and signing key
-(`update_checks_forced_disabled` in `src-tauri/src/settings.rs`, and the
-updater endpoint and pubkey in `src-tauri/tauri.conf.json`).
+## Updates
+
+Cravin updates itself. On launch (and every six hours) it checks the latest
+GitHub release, shows "Update available" in the sidebar, and installs and
+restarts on click. Settings → Updates has "Check now" and an auto-check switch.
+
+To ship an update:
+
+1. Set the updater endpoint in `src-tauri/tauri.conf.json` to this repo
+   (`https://github.com/<owner>/<repo>/releases/latest/download/latest.json`).
+2. Add the repo secrets `TAURI_SIGNING_PRIVATE_KEY` and
+   `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. The matching public key is already in
+   `tauri.conf.json`. Losing the private key means existing installs can't
+   update, so keep a backup.
+3. Bump `version` in `tauri.conf.json`, then run the Release workflow. It
+   builds signed installers and publishes `latest.json`.
+
+macOS and Windows code signing (Apple Developer ID, Azure Trusted Signing) are
+separate and optional for updates, but without them first installs show OS
+warnings.
 
 ## License
 

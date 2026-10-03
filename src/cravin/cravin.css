@@ -147,6 +147,32 @@
   gap: 4px;
 }
 
+.cv-update {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--cv-border);
+  border-radius: 12px;
+  background: var(--cv-bg);
+  text-align: start;
+  cursor: pointer;
+}
+.cv-update:disabled {
+  cursor: default;
+}
+.cv-update-title {
+  font-weight: 500;
+}
+.cv-update-sub {
+  font-size: 12px;
+  color: var(--cv-muted);
+}
+.cv-update + .cv-sidebar-foot {
+  margin-top: 0;
+}
+
 /* Main */
 .cv-main {
   flex: 1;
