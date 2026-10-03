@@ -1,5 +1,10 @@
 # AGENTS.md
 
+**Cravin:** this repo is Cravin, a fork of Handy. Cravin's UI lives in
+`src/cravin/` (styled with `cravin.css`, Tailwind only where it embeds Handy components). Its copy is
+exempt from the i18n lint rule for now. Everything below describes the Handy
+base it builds on; Handy's upstream PR/issue rules do not apply to this repo.
+
 This file provides guidance to AI coding assistants working with code in this repository.
 
 ## Development Commands
