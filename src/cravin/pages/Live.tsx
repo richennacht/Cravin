@@ -9,9 +9,11 @@ import {
   Sparkles,
   Info,
   MessageCircleQuestionMark,
+  PictureInPicture2,
 } from "lucide-react";
 import { LIVE_TITLE, PINNED, langName } from "../lib/demo";
-import { formatClock, loadPrefs } from "../lib/runtime";
+import { formatClock, inTauri, loadPrefs } from "../lib/runtime";
+import { toggleOverlay } from "../lib/overlay";
 import {
   revealSpans,
   type LiveAnswer,
@@ -53,6 +55,16 @@ export default function Live({ session }: { session: SessionState }) {
           <span className="cv-timer">{formatClock(session.elapsed)}</span>
           <span className="cv-tag">Me + Them</span>
           <span style={{ flex: 1 }} />
+          {inTauri && (
+            <button
+              type="button"
+              className="cv-btn cv-btn-sm"
+              onClick={toggleOverlay}
+              title="Floating panel only you can see"
+            >
+              <PictureInPicture2 size={13} /> Overlay
+            </button>
+          )}
           {session.running ? (
             <button
               type="button"

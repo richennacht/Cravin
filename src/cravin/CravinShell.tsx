@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Boxes,
   House,
@@ -10,6 +10,14 @@ import "./cravin.css";
 import { inTauri } from "./lib/runtime";
 import { useSession } from "./lib/useSession";
 import { useUpdater } from "./lib/updater";
+import { emitTo, listen } from "@tauri-apps/api/event";
+import { loadPrefs } from "./lib/runtime";
+import {
+  ANSWERS_EVENT,
+  ASK_EVENT,
+  OVERLAY_LABEL,
+  applyCaptureProtection,
+} from "./lib/overlay";
 import { useSettings } from "@/hooks/useSettings";
 import Home from "./pages/Home";
 import Live from "./pages/Live";
@@ -42,6 +50,29 @@ export default function CravinShell() {
     !isLoading &&
     updateChecksLocked === false &&
     (settings?.update_checks_enabled ?? false);
+
+  // Keep this window out of screen shares if the user asked for that.
+  useEffect(() => {
+    applyCaptureProtection(loadPrefs().hideFromShare);
+  }, []);
+
+  // Feed the floating overlay and take questions typed into it.
+  useEffect(() => {
+    if (!inTauri) return;
+    emitTo(OVERLAY_LABEL, ANSWERS_EVENT, session.answers).catch(() => {});
+  }, [session.answers]);
+
+  const askRef = useRef(session.ask);
+  askRef.current = session.ask;
+  useEffect(() => {
+    if (!inTauri) return;
+    const unlisten = listen<string>(ASK_EVENT, (e) =>
+      askRef.current(e.payload),
+    );
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
 
   // Check on launch, then every six hours while the app stays open.
   useEffect(() => {

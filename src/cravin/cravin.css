@@ -627,6 +627,57 @@
   font-size: 12px;
 }
 
+/* Floating assist overlay (its own always-on-top window) */
+.cv-overlay {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  box-sizing: border-box;
+  border-radius: 14px;
+  border: 1px solid var(--cv-border);
+  background: color-mix(in srgb, var(--cv-sidebar), transparent 4%);
+  color: var(--cv-text);
+  font-family: var(--cv-font);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow: hidden;
+  user-select: none;
+}
+.cv-overlay button {
+  font: inherit;
+  color: inherit;
+}
+.cv-overlay-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--cv-border);
+  cursor: grab;
+}
+.cv-overlay .cv-assist-body {
+  padding: 12px;
+  gap: 10px;
+}
+.cv-overlay .cv-ask {
+  padding: 10px 12px;
+}
+.cv-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cv-muted);
+  cursor: pointer;
+}
+.cv-icon-btn:hover {
+  background: var(--cv-surface-2);
+  color: var(--cv-text);
+}
+
 /* Translate */
 .cv-pair {
   display: flex;

@@ -1,0 +1,14 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "cravin",
+  "description": "Cravin's main window and its floating assist overlay",
+  "windows": ["main", "assist"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-set-content-protected",
+    "core:window:allow-close",
+    "core:window:allow-start-dragging",
+    "core:webview:allow-create-webview-window",
+    "core:event:allow-emit-to"
+  ]
+}

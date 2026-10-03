@@ -8,6 +8,7 @@ import type { Theme } from "@/bindings";
 import { TRANSLATE_LANGS, langName } from "../lib/demo";
 import { inTauri, loadPrefs, savePrefs, type Prefs } from "../lib/runtime";
 import { updateLabel, useUpdater } from "../lib/updater";
+import { applyCaptureProtection } from "../lib/overlay";
 import { getVersion } from "@tauri-apps/api/app";
 
 const ENGINE_SECTIONS = ["general", "advanced", "history", "about"] as const;
@@ -221,13 +222,16 @@ export default function Settings() {
           />
         </Row>
         <Row
-          title="Hide overlay from screen share"
-          desc="Reliable on Windows, best effort on macOS"
+          title="Hide Cravin from screen share"
+          desc="You still see Cravin and its overlay, but Zoom, Meet, Teams and most recorders don't. Reliable on Windows 10 2004+, best effort on macOS, not available on Linux."
         >
           <Switch
             on={prefs.hideFromShare}
-            onChange={(v) => setPref("hideFromShare", v)}
-            disabled
+            disabled={!inTauri}
+            onChange={(v) => {
+              setPref("hideFromShare", v);
+              applyCaptureProtection(v);
+            }}
           />
         </Row>
       </div>
