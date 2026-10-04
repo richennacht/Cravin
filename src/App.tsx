@@ -205,6 +205,13 @@ function App() {
       setOnboardingStep("done");
       return;
     }
+    // Handy's onboarding wizard only matters for macOS permissions. Everywhere
+    // else Cravin opens straight into its own UI and models are picked on the
+    // Models page.
+    if (platform() !== "macos") {
+      setOnboardingStep("done");
+      return;
+    }
     try {
       const settingsResult = await commands.getAppSettings();
       const hasCompletedOnboarding =
