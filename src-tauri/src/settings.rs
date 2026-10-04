@@ -431,6 +431,17 @@ pub struct AppSettings {
     pub translate_to_english: bool,
     #[serde(default = "default_selected_language")]
     pub selected_language: String,
+    /// Cravin: language the language hotkey forces while held (the normal
+    /// shortcut keeps auto-detecting). Its output is translated to English.
+    #[serde(default = "default_cravin_hotkey_language")]
+    pub cravin_hotkey_language: String,
+    /// Cravin: what the language hotkey listens to, "mic" or "system"
+    /// (what's playing on this PC; Windows only).
+    #[serde(default = "default_cravin_hotkey_source")]
+    pub cravin_hotkey_source: String,
+    /// Cravin: also paste the English translation into the focused app.
+    #[serde(default)]
+    pub cravin_hotkey_paste: bool,
     #[serde(default = "default_overlay_position")]
     pub overlay_position: OverlayPosition,
     #[serde(default = "default_debug_mode")]
@@ -576,6 +587,14 @@ fn default_whats_new_last_seen_version() -> String {
 
 fn default_selected_language() -> String {
     "auto".to_string()
+}
+
+fn default_cravin_hotkey_language() -> String {
+    "ja".to_string()
+}
+
+fn default_cravin_hotkey_source() -> String {
+    "mic".to_string()
 }
 
 fn default_overlay_position() -> OverlayPosition {
@@ -919,6 +938,17 @@ pub fn get_default_settings() -> AppSettings {
         },
     );
     bindings.insert(
+        "transcribe_language".to_string(),
+        ShortcutBinding {
+            id: "transcribe_language".to_string(),
+            name: "Language hotkey".to_string(),
+            description: "Listens in your preset language and translates it to English."
+                .to_string(),
+            default_binding: "ctrl+alt+space".to_string(),
+            current_binding: "ctrl+alt+space".to_string(),
+        },
+    );
+    bindings.insert(
         "cancel".to_string(),
         ShortcutBinding {
             id: "cancel".to_string(),
@@ -951,6 +981,9 @@ pub fn get_default_settings() -> AppSettings {
         selected_output_device: None,
         translate_to_english: false,
         selected_language: "auto".to_string(),
+        cravin_hotkey_language: default_cravin_hotkey_language(),
+        cravin_hotkey_source: default_cravin_hotkey_source(),
+        cravin_hotkey_paste: false,
         overlay_position: default_overlay_position(),
         debug_mode: false,
         log_level: default_log_level(),

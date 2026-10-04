@@ -10,6 +10,10 @@ import "./cravin.css";
 import { inTauri } from "./lib/runtime";
 import { useSession } from "./lib/useSession";
 import { useUpdater } from "./lib/updater";
+import {
+  startTranslationListener,
+  useTranslationActive,
+} from "./lib/translations";
 import { emitTo, listen } from "@tauri-apps/api/event";
 import { loadPrefs } from "./lib/runtime";
 import {
@@ -44,12 +48,16 @@ export default function CravinShell() {
   const [page, setPage] = useState<Page>("home");
   const session = useSession();
   const updater = useUpdater();
+  const translating = useTranslationActive();
   const { settings, isLoading, updateChecksLocked } = useSettings();
   const autoUpdate =
     inTauri &&
     !isLoading &&
     updateChecksLocked === false &&
     (settings?.update_checks_enabled ?? false);
+
+  // Collect language hotkey results even while another page is open.
+  useEffect(startTranslationListener, []);
 
   // Keep this window out of screen shares if the user asked for that.
   useEffect(() => {
@@ -97,6 +105,9 @@ export default function CravinShell() {
       {item.icon}
       <span className="cv-hide-narrow">{item.label}</span>
       {item.id === "live" && session.running && (
+        <span className="cv-dot cv-dot-live" />
+      )}
+      {item.id === "translate" && translating && (
         <span className="cv-dot cv-dot-live" />
       )}
     </button>
@@ -167,7 +178,9 @@ export default function CravinShell() {
           />
         )}
         {page === "live" && <Live session={session} />}
-        {page === "translate" && <Translate session={session} />}
+        {page === "translate" && (
+          <Translate onOpenModels={() => setPage("models")} />
+        )}
         {page === "models" && <Models />}
         {page === "settings" && <Settings />}
       </main>

@@ -1181,6 +1181,17 @@ impl TranscriptionManager {
     }
 
     pub fn transcribe(&self, audio: Vec<f32>) -> Result<String> {
+        self.transcribe_with_language(audio, None)
+    }
+
+    /// Transcribe with a one-off language/translate choice instead of the
+    /// persisted settings. Cravin's language hotkey uses this to force its
+    /// preset language without touching the everyday (auto-detect) setting.
+    pub fn transcribe_with_language(
+        &self,
+        audio: Vec<f32>,
+        language_override: Option<LanguageOverride>,
+    ) -> Result<String> {
         #[cfg(debug_assertions)]
         if std::env::var("HANDY_FORCE_TRANSCRIPTION_FAILURE").is_ok() {
             return Err(anyhow::anyhow!(
@@ -1217,7 +1228,11 @@ impl TranscriptionManager {
         }
 
         // Get current settings for configuration
-        let settings = get_settings(&self.app_handle);
+        let mut settings = get_settings(&self.app_handle);
+        if let Some(language_override) = language_override {
+            settings.selected_language = language_override.language;
+            settings.translate_to_english = language_override.translate_to_english;
+        }
 
         // Validate selected language against the model's supported languages.
         // If the language isn't supported, fall back to "auto" to prevent errors.
@@ -1540,6 +1555,13 @@ impl TranscriptionManager {
 
         Ok(final_result)
     }
+}
+
+/// A per-call replacement for the persisted language intent and translate flag.
+#[derive(Clone, Debug)]
+pub struct LanguageOverride {
+    pub language: String,
+    pub translate_to_english: bool,
 }
 
 struct StreamPerf {
