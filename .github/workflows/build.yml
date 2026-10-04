@@ -413,7 +413,7 @@ jobs:
       # MLAS runtime CPU dispatch, so it runs everywhere and dispatches to AVX2/AVX-512
       # kernels when present (perf parity on capable CPUs). build.rs stages
       # onnxruntime.dll into transcribe-libs/, which tauri.windows.conf.json bundles
-      # beside Handy.exe. ARM64 is excluded (all modern CPUs; keeps its static
+      # beside Cravin.exe. ARM64 is excluded (all modern CPUs; keeps its static
       # ORT posture).
       # NOTE: sourced from Microsoft's GitHub release; can be re-hosted on
       # blob.handy.computer to match the macOS/Linux steps.
@@ -704,7 +704,7 @@ jobs:
             fi
             HANDY_NO_GTK_LAYER_SHELL=1 \
             LD_LIBRARY_PATH="${root}/usr/lib/Cravin:${root}/usr/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
-              xvfb-run -a "${root}/usr/bin/handy" --list-devices \
+              xvfb-run -a "${root}/usr/bin/cravin" --list-devices \
                 >/tmp/handy-package-smoke.log 2>&1
             echo "${label} --list-devices smoke passed"
           }
@@ -714,7 +714,7 @@ jobs:
               echo "Auditing deb package: ${deb}"
               listing="$(mktemp)"
               dpkg-deb -c "$deb" > "$listing"
-              require_pattern "$listing" 'usr/bin/handy$' "handy binary"
+              require_pattern "$listing" 'usr/bin/cravin$' "cravin binary"
               require_pattern "$listing" 'usr/lib/Cravin/libtranscribe\.so(\.[0-9]+)+$' "transcribe runtime library (SONAME)"
               require_pattern "$listing" 'usr/lib/Cravin/libggml-cpu.*\.so' "ggml CPU backend module"
               if [[ "${{ inputs.platform }}" == *"ubuntu-22.04"* && "${{ inputs.target }}" == "x86_64-unknown-linux-gnu" ]]; then
@@ -744,7 +744,7 @@ jobs:
               echo "Auditing rpm package: ${rpm_pkg}"
               listing="$(mktemp)"
               rpm -qpl "$rpm_pkg" > "$listing"
-              require_pattern "$listing" '/usr/bin/handy$' "handy binary"
+              require_pattern "$listing" '/usr/bin/cravin$' "cravin binary"
               require_pattern "$listing" '/usr/lib/Cravin/libtranscribe\.so(\.[0-9]+)+$' "transcribe runtime library (SONAME)"
               require_pattern "$listing" '/usr/lib/Cravin/libggml-cpu.*\.so' "ggml CPU backend module"
               # Same /usr/lib pollution guard as the deb audit (issue #1639).
@@ -766,7 +766,7 @@ jobs:
               (
                 cd "$workdir"
                 ./Handy.AppImage --appimage-extract >/dev/null
-                require_path "squashfs-root/usr/bin/handy" "AppImage handy binary"
+                require_path "squashfs-root/usr/bin/cravin" "AppImage cravin binary"
                 # Gear Lever and other integration tools consume the root entry;
                 # appimagetool does not update the copy under usr/share/applications.
                 desktop_file="$(find squashfs-root -maxdepth 1 -type f -name '*.desktop' -print -quit)"
@@ -874,9 +874,9 @@ jobs:
           function Assert-PackageContents {
             param([string]$Root, [string]$Label)
 
-            $handy = Get-ChildItem $Root -Filter "handy.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            $handy = Get-ChildItem $Root -Filter "cravin.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
             if (-not $handy) {
-              throw "$Label package is missing handy.exe"
+              throw "$Label package is missing cravin.exe"
             }
             foreach ($dll in $stagedDlls) {
               if (-not (Get-ChildItem $Root -Filter $dll.Name -Recurse -ErrorAction SilentlyContinue)) {
@@ -887,7 +887,7 @@ jobs:
             $deviceOutput = (& $handy.FullName --list-devices | Out-String)
             $deviceOutput | Write-Host
             if ($LASTEXITCODE -ne 0) {
-              throw "$Label handy.exe --list-devices failed"
+              throw "$Label cravin.exe --list-devices failed"
             }
             if ("${{ inputs.target }}" -like "aarch64*" -and $deviceOutput -match "kind=(vulkan|cuda|metal|gpu)") {
               throw "$Label Windows ARM64 package unexpectedly exposed a GPU compute device"

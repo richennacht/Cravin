@@ -1,11 +1,11 @@
 [package]
-name = "handy"
+name = "cravin"
 version = "0.1.0"
 description = "Cravin"
 authors = ["cjpais"]
 edition = "2021"
 license = "MIT"
-default-run = "handy"
+default-run = "cravin"
 
 [profile.dev]
 incremental = true # Compile your binary in smaller steps.
