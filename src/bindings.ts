@@ -928,6 +928,67 @@ async isLaptop() : Promise<Result<boolean, string>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+async aiStatus() : Promise<Result<AiStatus, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("ai_status") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Open the browser to sign in with ChatGPT and wait for it to come back.
+ */
+async chatgptSignIn() : Promise<Result<AiStatus, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("chatgpt_sign_in") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async chatgptCancelSignIn() : Promise<void> {
+    await TAURI_INVOKE("chatgpt_cancel_sign_in");
+},
+async chatgptSignOut() : Promise<Result<AiStatus, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("chatgpt_sign_out") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Save an OpenAI API key, or remove it with `None`.
+ */
+async openaiSetApiKey(key: string | null) : Promise<Result<AiStatus, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("openai_set_api_key", { key }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async aiListModels(source: AiSource) : Promise<Result<AiModel[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("ai_list_models", { source }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Answer `input`, streaming text as `chatgpt-delta` events tagged with
+ * `request_id`, and return the full answer.
+ */
+async aiAsk(source: AiSource, requestId: string, model: string, instructions: string | null, input: string) : Promise<Result<string, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("ai_ask", { source, requestId, model, instructions, input }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -950,6 +1011,13 @@ streamTextEvent: "stream-text-event"
 
 /** user-defined types **/
 
+export type AiModel = { slug: string; display_name: string }
+export type AiSource = "chatgpt" | "api_key"
+export type AiStatus = { signed_in: boolean; email: string | null; name: string | null; 
+/**
+ * The user allowed Cravin to use their ChatGPT plan when signing in.
+ */
+plan_usage: boolean; api_key_set: boolean }
 /**
  * The container-level `serde(default)` (backed by the `Default` impl below)
  * guarantees every field — including ones added in the future — falls back to

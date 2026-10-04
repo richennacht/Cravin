@@ -5,6 +5,7 @@ mod audio_feedback;
 pub mod audio_toolkit;
 mod autostart;
 mod catalog;
+mod chatgpt;
 mod chinese_script;
 pub mod cli;
 mod clipboard;
@@ -766,6 +767,13 @@ pub fn run(cli_args: CliArgs) {
             commands::history::update_history_limit,
             commands::history::update_recording_retention_period,
             helpers::clamshell::is_laptop,
+            chatgpt::ai_status,
+            chatgpt::chatgpt_sign_in,
+            chatgpt::chatgpt_cancel_sign_in,
+            chatgpt::chatgpt_sign_out,
+            chatgpt::openai_set_api_key,
+            chatgpt::ai_list_models,
+            chatgpt::ai_ask,
         ])
         .events(collect_events![
             managers::history::HistoryUpdatePayload,
@@ -888,6 +896,7 @@ pub fn run(cli_args: CliArgs) {
             Some(vec![]),
         ))
         .manage(cli_args.clone())
+        .manage(chatgpt::ChatGpt::default())
         .setup(move |app| {
             #[cfg(target_os = "windows")]
             log::info!(
