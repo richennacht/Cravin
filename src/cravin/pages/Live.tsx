@@ -11,7 +11,8 @@ import {
   MessageCircleQuestionMark,
   PictureInPicture2,
 } from "lucide-react";
-import { LIVE_TITLE, PINNED, langName } from "../lib/demo";
+import { LIVE_TITLE, PINNED } from "../lib/demo";
+import { langName } from "../lib/languages";
 import { formatClock, inTauri, loadPrefs } from "../lib/runtime";
 import { toggleOverlay } from "../lib/overlay";
 import {

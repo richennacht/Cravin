@@ -718,6 +718,66 @@
   gap: 12px;
 }
 
+.cv-tr-note {
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--cv-muted);
+}
+.cv-tr-error {
+  color: var(--cv-live);
+}
+.cv-tr-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cv-tr-mini .cv-tr-source {
+  font-size: 12px;
+  color: var(--cv-muted);
+}
+.cv-tr-mini .cv-tr-english {
+  font-size: 15px;
+  font-weight: 500;
+  user-select: text;
+}
+
+/* Language hotkey */
+.cv-hotkey {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  vertical-align: 1px;
+}
+.cv-hotkey .cv-kbd {
+  font-family: inherit;
+  color: var(--cv-text);
+  background: var(--cv-bg);
+}
+.cv-hotkey-plus {
+  font-size: 11px;
+  color: var(--cv-faint);
+}
+.cv-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border-radius: var(--cv-radius-sm);
+  border: 1px solid var(--cv-border);
+  background: var(--cv-surface);
+  color: var(--cv-muted);
+  font-size: 12.5px;
+}
+/* Handy's shortcut editor embedded as a settings row */
+.cv-embed-row {
+  border-bottom: 1px solid var(--cv-border);
+  padding: 4px 0;
+}
+.cv-embed-row > div {
+  padding-inline: 2px;
+}
+
 @media (max-width: 860px) {
   .cv-live {
     grid-template-columns: 1fr;

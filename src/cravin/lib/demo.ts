@@ -221,21 +221,6 @@ export const SUMMARY_AFTER: Record<string, string> = {
   g7: "Kenji will check pricing with procurement and follow up.",
 };
 
-const LANG_NAMES: Record<string, string> = {
-  en: "English",
-  ja: "Japanese",
-  es: "Spanish",
-  hi: "Hindi",
-  zh: "Chinese",
-  ko: "Korean",
-  de: "German",
-  fr: "French",
-};
-
-export const langName = (code: string) => LANG_NAMES[code] ?? code;
-
-export const TRANSLATE_LANGS = Object.keys(LANG_NAMES);
-
 /** Canned answers for the preview's ask box, picked by keyword. */
 export const answerFor = (
   question: string,

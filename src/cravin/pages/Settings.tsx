@@ -5,7 +5,12 @@ import { SECTIONS_CONFIG } from "@/components/Sidebar";
 import AccessibilityPermissions from "@/components/AccessibilityPermissions";
 import SecureInputWarning from "@/components/SecureInputWarning";
 import type { Theme } from "@/bindings";
-import { TRANSLATE_LANGS, langName } from "../lib/demo";
+import { ShortcutInput } from "@/components/settings/ShortcutInput";
+import { LANGUAGES } from "@/lib/constants/languages";
+import { HOTKEY_LANGS, TRANSLATE_LANGS, langName } from "../lib/languages";
+import { HOTKEY_BINDING_ID, isWindows, useHotkeySettings } from "../lib/hotkey";
+import { SOURCE_LABEL } from "../lib/translations";
+import { Hotkey } from "./Translate";
 import { inTauri, loadPrefs, savePrefs, type Prefs } from "../lib/runtime";
 import { updateLabel, useUpdater } from "../lib/updater";
 import { applyCaptureProtection } from "../lib/overlay";
@@ -71,6 +76,10 @@ export default function Settings() {
     updateChecksLocked,
   } = useSettings();
   const updater = useUpdater();
+  const hotkey = useHotkeySettings();
+  const hotkeyLangs = HOTKEY_LANGS.includes(hotkey.language)
+    ? HOTKEY_LANGS
+    : [hotkey.language, ...HOTKEY_LANGS];
   const [version, setVersion] = useState<string>("0.1.0");
   const [prefs, setPrefs] = useState<Prefs>(loadPrefs);
   const [theme, setTheme] = useState<Theme>(getStoredTheme);
@@ -143,6 +152,93 @@ export default function Settings() {
             {TRANSLATE_LANGS.map((l) => (
               <option key={l} value={l}>
                 {langName(l)}
+              </option>
+            ))}
+          </select>
+        </Row>
+      </div>
+
+      <h2 className="cv-section-title">Language hotkey</h2>
+      <p className="cv-row-desc" style={{ marginTop: -6, marginBottom: 12 }}>
+        Your normal shortcut auto-detects the language. The language hotkey
+        always listens for your preset language and translates it to English.
+      </p>
+      <div className="cv-list">
+        {inTauri ? (
+          <div className="cv-embed-row">
+            <ShortcutInput
+              shortcutId={HOTKEY_BINDING_ID}
+              descriptionMode="inline"
+              grouped
+            />
+          </div>
+        ) : (
+          <Row title="Language hotkey" desc="Change it in the desktop app">
+            <Hotkey binding={hotkey.binding} />
+          </Row>
+        )}
+        <Row
+          title="Preset language"
+          desc="What the language hotkey listens for"
+        >
+          <select
+            className="cv-select"
+            disabled={!inTauri}
+            value={hotkey.language}
+            onChange={(e) => hotkey.setLanguage(e.target.value)}
+          >
+            {hotkeyLangs.map((l) => (
+              <option key={l} value={l}>
+                {langName(l)}
+              </option>
+            ))}
+          </select>
+        </Row>
+        <Row
+          title="Listen to"
+          desc={
+            isWindows
+              ? "Your microphone, or whatever is playing on this PC"
+              : "This PC's audio is Windows only for now"
+          }
+        >
+          <select
+            className="cv-select"
+            disabled={!inTauri}
+            value={hotkey.source}
+            onChange={(e) =>
+              hotkey.setSource(e.target.value === "system" ? "system" : "mic")
+            }
+          >
+            <option value="mic">{SOURCE_LABEL.mic}</option>
+            <option value="system" disabled={!isWindows}>
+              {SOURCE_LABEL.system}
+            </option>
+          </select>
+        </Row>
+        <Row
+          title="Also paste the English"
+          desc="Type the translation into the app you're in, like dictation"
+        >
+          <Switch
+            on={hotkey.paste}
+            disabled={!inTauri}
+            onChange={hotkey.setPaste}
+          />
+        </Row>
+        <Row
+          title="Everyday language"
+          desc="What your normal shortcut listens for. Auto-detect works for most people."
+        >
+          <select
+            className="cv-select"
+            disabled={!inTauri}
+            value={hotkey.everydayLanguage}
+            onChange={(e) => updateSetting("selected_language", e.target.value)}
+          >
+            {LANGUAGES.map((l) => (
+              <option key={l.value} value={l.value}>
+                {l.value === "auto" ? "Auto-detect" : l.label}
               </option>
             ))}
           </select>
