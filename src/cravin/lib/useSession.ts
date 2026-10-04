@@ -4,9 +4,12 @@ import {
   SUGGESTIONS,
   SUMMARY_AFTER,
   answerFor,
+  langName,
   type Segment,
   type Suggestion,
 } from "./demo";
+import { answerConfig, askAi } from "./ai";
+import { loadPrefs } from "./runtime";
 
 const SPEAK_RATE = 0.045; // seconds per character while a turn is "spoken"
 const STREAM_RATE = 70; // characters per second for streamed answers
@@ -28,7 +31,16 @@ export type LiveAnswer = {
   reply?: Suggestion["reply"];
 };
 
-type Ask = { id: string; question: string; at: number };
+type Ask = {
+  id: string;
+  question: string;
+  at: number;
+  // Set when a real model answers instead of the demo script.
+  real?: { model: string; text: string };
+};
+
+const answerInstructions = () =>
+  `You are Cravin, a meeting assistant. Answer the user's question using the meeting transcript when it's relevant. Be brief and direct, a few sentences at most. Reply in ${langName(loadPrefs().translateTo)}.`;
 
 const segLength = (s: Segment) =>
   s.spans.reduce((n, sp) => n + sp.text.length, 0);
@@ -90,6 +102,18 @@ export function useSession() {
       });
     }
     for (const ask of asks) {
+      if (ask.real) {
+        out.push({
+          id: ask.id,
+          question: ask.question,
+          tier: "api",
+          model: ask.real.model,
+          text: ask.real.text || "…",
+          shown: Infinity,
+          start: ask.at,
+        });
+        continue;
+      }
       const a = answerFor(ask.question);
       const start = ask.at + 0.4;
       out.push({
@@ -111,18 +135,49 @@ export function useSession() {
     [elapsed],
   );
 
-  const ask = useCallback(
-    (question: string) => {
-      const q = question.trim();
-      if (!q) return;
+  const ask = useCallback((question: string) => {
+    const q = question.trim();
+    if (!q) return;
+    const id = `ask-${Date.now()}`;
+    const at = elapsedRef.current;
+    setRunning(true);
+    void (async () => {
+      const config = await answerConfig();
+      if (!config) {
+        setAsks((prev) => [...prev, { id, question: q, at }]);
+        return;
+      }
       setAsks((prev) => [
         ...prev,
-        { id: `ask-${prev.length}`, question: q, at: elapsed },
+        { id, question: q, at, real: { model: config.model, text: "" } },
       ]);
-      setRunning(true);
-    },
-    [elapsed],
-  );
+      const patch = (fn: (text: string) => string) =>
+        setAsks((prev) =>
+          prev.map((a) =>
+            a.id === id && a.real
+              ? { ...a, real: { ...a.real, text: fn(a.real.text) } }
+              : a,
+          ),
+        );
+      const transcript = SCRIPT.filter((s) => finalAt(s) <= at)
+        .map(
+          (s) =>
+            `${s.side === "me" ? "Me" : "Them"}: ${s.spans.map((sp) => sp.text).join("")}`,
+        )
+        .join("\n");
+      try {
+        await askAi(
+          config,
+          answerInstructions(),
+          `Transcript so far:\n${transcript || "(nothing yet)"}\n\nQuestion: ${q}`,
+          (delta) => patch((text) => text + delta),
+        );
+      } catch (e) {
+        const reason = (e as Error).message;
+        patch((text) => text || `Couldn't answer: ${reason}`);
+      }
+    })();
+  }, []);
 
   const reset = useCallback(() => {
     setRunning(false);

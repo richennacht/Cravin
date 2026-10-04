@@ -10,6 +10,7 @@ import { inTauri, loadPrefs, savePrefs, type Prefs } from "../lib/runtime";
 import { updateLabel, useUpdater } from "../lib/updater";
 import { applyCaptureProtection } from "../lib/overlay";
 import { getVersion } from "@tauri-apps/api/app";
+import { SOURCE_LABELS, availableSources, useAi } from "../lib/ai";
 
 const ENGINE_SECTIONS = ["general", "advanced", "history", "about"] as const;
 type EngineSection = (typeof ENGINE_SECTIONS)[number];
@@ -148,6 +149,8 @@ export default function Settings() {
           </select>
         </Row>
       </div>
+
+      <Answers />
 
       <h2 className="cv-section-title">Audio</h2>
       <div className="cv-list">
@@ -318,5 +321,140 @@ export default function Settings() {
         </div>
       )}
     </div>
+  );
+}
+
+function Answers() {
+  const ai = useAi();
+  const [key, setKey] = useState("");
+  const status = ai.status;
+  const sources = availableSources(status);
+
+  const accountDesc = !inTauri
+    ? "Available in the desktop app"
+    : status?.signed_in
+      ? status.plan_usage
+        ? `Signed in as ${status.email ?? status.name ?? "your ChatGPT account"}. Answers use your plan's limits.`
+        : "Signed in, but plan usage wasn't allowed. Sign out and sign in again, then allow Cravin to use your plan."
+      : "Use your ChatGPT Plus or Pro plan, the same login as Codex. No API key needed.";
+
+  return (
+    <>
+      <h2 className="cv-section-title">Answers</h2>
+      <div className="cv-list">
+        <Row title="ChatGPT account" desc={accountDesc}>
+          {ai.signingIn ? (
+            <button
+              type="button"
+              className="cv-btn cv-btn-sm"
+              onClick={ai.cancelSignIn}
+            >
+              Cancel
+            </button>
+          ) : status?.signed_in ? (
+            <button
+              type="button"
+              className="cv-btn cv-btn-sm"
+              onClick={ai.signOut}
+            >
+              Sign out
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="cv-btn cv-btn-sm cv-btn-primary"
+              disabled={!inTauri}
+              onClick={ai.signIn}
+            >
+              Sign in with ChatGPT
+            </button>
+          )}
+        </Row>
+        <Row
+          title="OpenAI API key"
+          desc={
+            status?.api_key_set
+              ? "Saved and encrypted on this machine"
+              : "Pay per use instead of using a ChatGPT plan"
+          }
+        >
+          {status?.api_key_set ? (
+            <button
+              type="button"
+              className="cv-btn cv-btn-sm"
+              onClick={() => ai.setApiKey(null)}
+            >
+              Remove
+            </button>
+          ) : (
+            <form
+              style={{ display: "flex", gap: 8 }}
+              onSubmit={(e) => {
+                e.preventDefault();
+                ai.setApiKey(key);
+                setKey("");
+              }}
+            >
+              <input
+                className="cv-input"
+                type="password"
+                placeholder="sk-..."
+                autoComplete="off"
+                disabled={!inTauri}
+                value={key}
+                onChange={(e) => setKey(e.target.value)}
+                style={{ width: 180 }}
+              />
+              <button
+                type="submit"
+                className="cv-btn cv-btn-sm"
+                disabled={!inTauri || !key.trim()}
+              >
+                Save
+              </button>
+            </form>
+          )}
+        </Row>
+        {sources.length > 1 && (
+          <Row title="Answer with">
+            <select
+              className="cv-select"
+              value={ai.source ?? ""}
+              onChange={(e) =>
+                ai.setSource(e.target.value as (typeof sources)[number])
+              }
+            >
+              {sources.map((s) => (
+                <option key={s} value={s}>
+                  {SOURCE_LABELS[s]}
+                </option>
+              ))}
+            </select>
+          </Row>
+        )}
+        {ai.source && (
+          <Row title="Model">
+            <select
+              className="cv-select"
+              value={ai.model ?? ""}
+              disabled={ai.models.length === 0}
+              onChange={(e) => ai.setModel(e.target.value)}
+            >
+              {ai.models.length === 0 && <option value="">Loading…</option>}
+              {ai.models.map((m) => (
+                <option key={m.slug} value={m.slug}>
+                  {m.display_name}
+                </option>
+              ))}
+            </select>
+          </Row>
+        )}
+      </div>
+      {ai.error && (
+        <p className="cv-row-desc" role="alert" style={{ marginTop: 8 }}>
+          {ai.error}
+        </p>
+      )}
+    </>
   );
 }
