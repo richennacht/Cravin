@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cravin</title>
+    <meta
+      name="description"
+      content="Cravin is a private meeting copilot for Windows. Local by default."
+    />
+    <link rel="icon" type="image/png" href="icon.png" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="nav">
+      <a class="brand" href="./">
+        <img src="icon.png" alt="" width="22" height="22" />
+        <span>Cravin</span>
+      </a>
+      <nav>
+        <a href="https://github.com/richennacht/cravin">GitHub</a>
+        <a href="https://github.com/richennacht/cravin/releases">Releases</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <img class="hero-icon" src="icon.png" alt="" width="88" height="88" />
+        <h1>Cravin</h1>
+        <p class="lede">
+          A private meeting copilot for your desktop. It listens, translates and
+          suggests answers, and it runs locally by default.
+        </p>
+
+        <div class="cta">
+          <a
+            id="download"
+            class="btn"
+            href="https://github.com/richennacht/cravin/releases/latest"
+          >
+            <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M0 2.3 6.5 1.4v6.3H0zm7.3-1L16 0v7.6H7.3zM0 8.4h6.5v6.3L0 13.8zm7.3 0H16V16l-8.7-1.2z"
+              />
+            </svg>
+            <span id="download-label">Download for Windows</span>
+          </a>
+          <p id="download-meta" class="meta">Windows 10 and 11, 64-bit</p>
+        </div>
+      </section>
+
+      <section class="cards">
+        <article class="card">
+          <h3>Both sides of the call</h3>
+          <p>Follows you and the other side as the meeting happens.</p>
+        </article>
+        <article class="card">
+          <h3>Translate mid-sentence</h3>
+          <p>Anything not in your language shows up translated, live.</p>
+        </article>
+        <article class="card">
+          <h3>Local by default</h3>
+          <p>
+            Speech models run on your machine. Nothing leaves it unless you say
+            so.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Stays out of shares</h3>
+          <p>The assist overlay is hidden from most screen shares.</p>
+        </article>
+      </section>
+
+      <section class="note">
+        <h2>First launch</h2>
+        <p>
+          Cravin isn't code-signed yet, so Windows SmartScreen may say
+          <em>"Windows protected your PC"</em>. Click
+          <strong>More info</strong>, then <strong>Run anyway</strong>. After
+          that, Cravin updates itself.
+        </p>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <span>Early preview. Some features are still in progress.</span>
+      <span>
+        Built on <a href="https://handy.computer">Handy</a>, MIT licensed.
+      </span>
+    </footer>
+
+    <script src="download.js"></script>
+  </body>
+</html>
